@@ -1,0 +1,64 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gửi Video về Telegram</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 30px;
+      max-width: 500px;
+      margin: auto;
+    }
+    h2 {
+      color: #2c3e50;
+    }
+    #status {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>Gửi video về cho tôi</h2>
+  <form id="uploadForm">
+    <input type="file" id="videoInput" accept="video/*" required />
+    <button type="submit">Gửi video</button>
+  </form>
+
+  <p id="status"></p>
+
+  <script>
+    const TOKEN = "8011561432:AAG-17bZDwjLJ1m8ILavQww0qCvBLiNiFR8";
+    const CHAT_ID = "5881849567";
+
+    document.getElementById("uploadForm").onsubmit = async (e) => {
+      e.preventDefault();
+      const file = document.getElementById("videoInput").files[0];
+      if (!file) return alert("Vui lòng chọn video!");
+
+      const formData = new FormData();
+      formData.append("chat_id", CHAT_ID);
+      formData.append("video", file);
+
+      document.getElementById("status").innerText = "⏳ Đang gửi video...";
+
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${TOKEN}/sendVideo`, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (res.ok) {
+          document.getElementById("status").innerText = "✅ Video đã gửi thành công!";
+        } else {
+          document.getElementById("status").innerText = "❌ Gửi thất bại!";
+        }
+      } catch (err) {
+        document.getElementById("status").innerText = "⚠️ Có lỗi xảy ra khi gửi!";
+      }
+    };
+  </script>
+</body>
+</html>
