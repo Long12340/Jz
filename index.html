@@ -1,67 +1,223 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Liên Quân • Check Phong Thần</title>
-<style>
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#080b12;color:#f4f6fb;min-height:100vh;display:grid;place-items:center;padding:20px}
-.card{width:min(560px,100%);background:#111722;border:1px solid #252d3b;border-radius:22px;padding:28px;box-shadow:0 20px 60px #0008}
-h1{margin:0 0 8px;font-size:26px}.sub{color:#9da7b8;margin:0 0 24px}
-label{display:block;font-size:14px;color:#cbd2df;margin-bottom:8px}
-.row{display:flex;gap:10px}.row input{flex:1}
-input{width:100%;padding:14px 15px;border-radius:12px;border:1px solid #303949;background:#0b0f17;color:#fff;font-size:16px;outline:none}
-input:focus{border-color:#728cff}button{border:0;border-radius:12px;padding:0 20px;background:#728cff;color:#fff;font-weight:700;cursor:pointer}button:disabled{opacity:.6}
-.result{margin-top:20px;padding:18px;border-radius:16px;background:#0b0f17;border:1px solid #293142;display:none}
-.result.show{display:block}.ok{border-color:#1d8151}.bad{border-color:#9a3d48}.unknown{border-color:#665c31}
-.status{font-size:19px;font-weight:800;margin-bottom:12px}.green{color:#54d99a}.red{color:#ff7582}.yellow{color:#e9cc68}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.item{background:#121824;border-radius:10px;padding:10px}.k{font-size:12px;color:#8993a5}.v{margin-top:3px;word-break:break-word}
-.note{margin-top:18px;font-size:12px;line-height:1.5;color:#8993a5}
-code{color:#cfd7ff}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lời Chúc Gửi Đến Bé Qi Long</title>
+    <!-- Load Tailwind CSS for modern styling and responsive design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Google Font Quicksand for a soft, romantic look -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: radial-gradient(circle at center, #1b1a30 0%, #0d0c1d 100%);
+            overflow: hidden;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Starry background effect */
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle var(--duration) infinite ease-in-out;
+            opacity: var(--opacity);
+        }
+
+        @keyframes twinkle {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.4); opacity: 1; filter: drop-shadow(0 0 6px white); }
+        }
+
+        /* Floating floating heart CSS */
+        .floating-heart {
+            position: absolute;
+            bottom: -20px;
+            color: rgba(244, 114, 182, 0.7);
+            font-size: var(--size);
+            animation: floatUp var(--speed) linear infinite;
+            user-select: none;
+            z-index: 1;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) rotate(0deg) scale(0.8);
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.9;
+            }
+            100% {
+                transform: translateY(-110vh) rotate(360deg) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        /* Card glassmorphism style */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 30px rgba(236, 72, 153, 0.2);
+        }
+
+        /* Heartbeat animation */
+        .heartbeat {
+            animation: pulseBeat 1.4s infinite ease-in-out;
+        }
+
+        @keyframes pulseBeat {
+            0%, 100% { transform: scale(1); }
+            15% { transform: scale(1.25); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.15); }
+            60% { transform: scale(1); }
+        }
+    </style>
 </head>
-<body>
-<main class="card">
-<h1>⚔️ Check Phong Thần Liên Quân</h1>
-<p class="sub">Kiểm tra UID có xuất hiện trong Bảng Phong Thần của Garena.</p>
-<label for="uid">UID người chơi</label>
-<div class="row"><input id="uid" inputmode="numeric" placeholder="Nhập UID..." autocomplete="off"><button id="btn">KIỂM TRA</button></div>
-<div id="result" class="result"></div>
-<p class="note">Nguồn dữ liệu: Bảng Phong Thần Liên Quân Garena. “Không có” chỉ có nghĩa là UID không được tìm thấy trong bảng; không phải xác nhận tuyệt đối tài khoản chưa từng bị khóa. GitHub Pages không thể tự vượt CORS/chống bot nếu máy chủ Garena không cho phép trình duyệt gọi trực tiếp.</p>
-</main>
-<script>
-const uid=document.getElementById('uid'),btn=document.getElementById('btn'),box=document.getElementById('result');
-function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-function show(cls,title,body){box.className='result show '+cls;box.innerHTML=`<div class="status ${cls==='bad'?'red':cls==='ok'?'green':'yellow'}">${title}</div>${body}`;}
-async function check(){
- const id=uid.value.trim();
- if(!/^\d+$/.test(id)){show('unknown','⚠️ UID không hợp lệ','<div>Hãy nhập UID chỉ gồm chữ số.</div>');return}
- btn.disabled=true;btn.textContent='ĐANG KIỂM TRA...';show('unknown','⏳ Đang kiểm tra','<div>Đang truy vấn Bảng Phong Thần...</div>');
- try{
-   /*
-    * IMPORTANT:
-    * The official site may block browser cross-origin requests.
-    * Put your own proxy endpoint in PROXY below if direct fetch fails.
-    */
-   const PROXY='';
-   const url=PROXY ? PROXY + encodeURIComponent(id) : 'https://xuphat.lienquan.garena.vn/?uid='+encodeURIComponent(id);
-   const r=await fetch(url,{headers:{'Accept':'text/html,application/json'}});
-   if(!r.ok) throw new Error('HTTP '+r.status);
-   const text=await r.text();
-   const lower=text.toLowerCase();
-   const found = lower.includes(id) && !lower.includes('search_notfound');
-   if(found){
-     show('bad','🔴 CÓ TRONG BẢNG PHONG THẦN',`<div class="grid">
-       <div class="item"><div class="k">UID</div><div class="v">${esc(id)}</div></div>
-       <div class="item"><div class="k">Nguồn</div><div class="v">Garena</div></div>
-     </div><p class="note">UID được tìm thấy trong nội dung trả về. Có thể mở trang nguồn để xem chi tiết xử phạt.</p>`);
-   }else{
-     show('ok','🟢 KHÔNG TÌM THẤY',`<div class="grid"><div class="item"><div class="k">UID</div><div class="v">${esc(id)}</div></div><div class="item"><div class="k">Kết quả</div><div class="v">Không có trong Bảng Phong Thần</div></div></div>`);
-   }
- }catch(e){
-   show('unknown','⚠️ KHÔNG THỂ KẾT NỐI',`<div>Trình duyệt/GitHub Pages bị chặn khi gọi trực tiếp máy chủ Garena (CORS hoặc cơ chế bảo vệ).</div><p class="note">Đây không phải kết luận tài khoản chưa/đã ban. Cần một proxy/backend trung gian để truy vấn an toàn.</p>`);
- }finally{btn.disabled=false;btn.textContent='KIỂM TRA'}
-}
-btn.onclick=check;uid.addEventListener('keydown',e=>{if(e.key==='Enter')check()});
-</script>
-</body></html>
+<body class="relative w-full h-screen">
+
+    <!-- Dynamic Stars Container -->
+    <div id="stars-container" class="absolute inset-0 pointer-events-none z-0"></div>
+
+    <!-- Dynamic Floating Hearts Container -->
+    <div id="hearts-container" class="absolute inset-0 pointer-events-none z-10"></div>
+
+    <!-- Main Content Container -->
+    <main class="relative z-20 flex flex-col items-center justify-center p-6 w-full max-w-lg mx-auto text-center">
+        
+        <div class="glass-card rounded-3xl p-8 md:p-12 w-full transform transition-all duration-700 hover:scale-[1.02]">
+            
+            <!-- Glowing Heart Icon -->
+            <div class="mb-6 flex justify-center">
+                <div class="w-20 h-20 bg-pink-500/20 rounded-full flex items-center justify-center border border-pink-400/40 shadow-lg shadow-pink-500/30">
+                    <span class="text-4xl heartbeat select-none">💖</span>
+                </div>
+            </div>
+
+            <!-- Title -->
+            <h1 class="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 mb-6 tracking-wide uppercase">
+                Lời chúc gửi đến bé Qi Long
+            </h1>
+
+            <!-- Divider Line -->
+            <div class="w-24 h-0.5 bg-gradient-to-r from-transparent via-pink-400 to-transparent mx-auto mb-6 opacity-60"></div>
+
+            <!-- Message content -->
+            <p class="text-pink-100 text-lg md:text-xl font-medium leading-relaxed tracking-wide drop-shadow">
+                “Chúc bạn ngủ ngon, mơ xinh, và cảm ơn anh vì đã yêu em”
+            </p>
+
+            <!-- Small interactive reaction button -->
+            <div class="mt-8">
+                <button onclick="createBurst()" class="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold rounded-full shadow-lg shadow-pink-500/30 transform active:scale-95 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-pink-400">
+                    Gửi ngàn yêu thương ✨
+                </button>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        // Generate starry night background
+        function initStars() {
+            const container = document.getElementById('stars-container');
+            const starCount = 60;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                const size = Math.random() * 3 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                
+                const duration = Math.random() * 3 + 2;
+                const opacity = Math.random() * 0.7 + 0.3;
+                star.style.setProperty('--duration', `${duration}s`);
+                star.style.setProperty('--opacity', opacity);
+                
+                container.appendChild(star);
+            }
+        }
+
+        // Generate continuous floating hearts
+        function initFloatingHearts() {
+            const container = document.getElementById('hearts-container');
+            const heartSymbols = ['❤️', '💖', '✨', '💕', '💗', '⭐'];
+
+            setInterval(() => {
+                const heart = document.createElement('div');
+                heart.className = 'floating-heart';
+                heart.innerText = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
+                
+                heart.style.left = `${Math.random() * 100}%`;
+                
+                const size = Math.random() * 1.5 + 0.8 + 'rem';
+                heart.style.setProperty('--size', size);
+                
+                const speed = Math.random() * 6 + 6 + 's';
+                heart.style.setProperty('--speed', speed);
+                
+                container.appendChild(heart);
+
+                // Clean up DOM after animation completes
+                setTimeout(() => {
+                    heart.remove();
+                }, 12000);
+            }, 800);
+        }
+
+        // Interactive burst effect when clicking the button
+        function createBurst() {
+            const container = document.getElementById('hearts-container');
+            const emojis = ['💖', '✨', '🌹', '💘', '⭐'];
+            
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'absolute text-2xl pointer-events-none z-30 transition-all duration-1000 ease-out';
+                particle.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                // Start from center of screen
+                const startX = window.innerWidth / 2;
+                const startY = window.innerHeight / 2;
+                particle.style.left = `${startX}px`;
+                particle.style.top = `${startY}px`;
+                
+                container.appendChild(particle);
+                
+                // Random angle and distance
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 150 + 50;
+                const destX = startX + Math.cos(angle) * distance;
+                const destY = startY + Math.sin(angle) * distance;
+                
+                requestAnimationFrame(() => {
+                    particle.style.transform = `translate(${destX - startX}px, ${destY - startY}px) scale(${Math.random() * 1.5 + 0.5})`;
+                    particle.style.opacity = '0';
+                });
+
+                setTimeout(() => {
+                    particle.remove();
+                }, 1000);
+            }
+        }
+
+        // Initialize animations on window load
+        window.onload = function () {
+            initStars();
+            initFloatingHearts();
+        };
+    </script>
+</body>
+</html>
