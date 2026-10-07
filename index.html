@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Liên Quân • Check Phong Thần</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#080b12;color:#f4f6fb;min-height:100vh;display:grid;place-items:center;padding:20px}
+.card{width:min(560px,100%);background:#111722;border:1px solid #252d3b;border-radius:22px;padding:28px;box-shadow:0 20px 60px #0008}
+h1{margin:0 0 8px;font-size:26px}.sub{color:#9da7b8;margin:0 0 24px}
+label{display:block;font-size:14px;color:#cbd2df;margin-bottom:8px}
+.row{display:flex;gap:10px}.row input{flex:1}
+input{width:100%;padding:14px 15px;border-radius:12px;border:1px solid #303949;background:#0b0f17;color:#fff;font-size:16px;outline:none}
+input:focus{border-color:#728cff}button{border:0;border-radius:12px;padding:0 20px;background:#728cff;color:#fff;font-weight:700;cursor:pointer}button:disabled{opacity:.6}
+.result{margin-top:20px;padding:18px;border-radius:16px;background:#0b0f17;border:1px solid #293142;display:none}
+.result.show{display:block}.ok{border-color:#1d8151}.bad{border-color:#9a3d48}.unknown{border-color:#665c31}
+.status{font-size:19px;font-weight:800;margin-bottom:12px}.green{color:#54d99a}.red{color:#ff7582}.yellow{color:#e9cc68}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.item{background:#121824;border-radius:10px;padding:10px}.k{font-size:12px;color:#8993a5}.v{margin-top:3px;word-break:break-word}
+.note{margin-top:18px;font-size:12px;line-height:1.5;color:#8993a5}
+code{color:#cfd7ff}
+</style>
+</head>
+<body>
+<main class="card">
+<h1>⚔️ Check Phong Thần Liên Quân</h1>
+<p class="sub">Kiểm tra UID có xuất hiện trong Bảng Phong Thần của Garena.</p>
+<label for="uid">UID người chơi</label>
+<div class="row"><input id="uid" inputmode="numeric" placeholder="Nhập UID..." autocomplete="off"><button id="btn">KIỂM TRA</button></div>
+<div id="result" class="result"></div>
+<p class="note">Nguồn dữ liệu: Bảng Phong Thần Liên Quân Garena. “Không có” chỉ có nghĩa là UID không được tìm thấy trong bảng; không phải xác nhận tuyệt đối tài khoản chưa từng bị khóa. GitHub Pages không thể tự vượt CORS/chống bot nếu máy chủ Garena không cho phép trình duyệt gọi trực tiếp.</p>
+</main>
+<script>
+const uid=document.getElementById('uid'),btn=document.getElementById('btn'),box=document.getElementById('result');
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function show(cls,title,body){box.className='result show '+cls;box.innerHTML=`<div class="status ${cls==='bad'?'red':cls==='ok'?'green':'yellow'}">${title}</div>${body}`;}
+async function check(){
+ const id=uid.value.trim();
+ if(!/^\d+$/.test(id)){show('unknown','⚠️ UID không hợp lệ','<div>Hãy nhập UID chỉ gồm chữ số.</div>');return}
+ btn.disabled=true;btn.textContent='ĐANG KIỂM TRA...';show('unknown','⏳ Đang kiểm tra','<div>Đang truy vấn Bảng Phong Thần...</div>');
+ try{
+   /*
+    * IMPORTANT:
+    * The official site may block browser cross-origin requests.
+    * Put your own proxy endpoint in PROXY below if direct fetch fails.
+    */
+   const PROXY='';
+   const url=PROXY ? PROXY + encodeURIComponent(id) : 'https://xuphat.lienquan.garena.vn/?uid='+encodeURIComponent(id);
+   const r=await fetch(url,{headers:{'Accept':'text/html,application/json'}});
+   if(!r.ok) throw new Error('HTTP '+r.status);
+   const text=await r.text();
+   const lower=text.toLowerCase();
+   const found = lower.includes(id) && !lower.includes('search_notfound');
+   if(found){
+     show('bad','🔴 CÓ TRONG BẢNG PHONG THẦN',`<div class="grid">
+       <div class="item"><div class="k">UID</div><div class="v">${esc(id)}</div></div>
+       <div class="item"><div class="k">Nguồn</div><div class="v">Garena</div></div>
+     </div><p class="note">UID được tìm thấy trong nội dung trả về. Có thể mở trang nguồn để xem chi tiết xử phạt.</p>`);
+   }else{
+     show('ok','🟢 KHÔNG TÌM THẤY',`<div class="grid"><div class="item"><div class="k">UID</div><div class="v">${esc(id)}</div></div><div class="item"><div class="k">Kết quả</div><div class="v">Không có trong Bảng Phong Thần</div></div></div>`);
+   }
+ }catch(e){
+   show('unknown','⚠️ KHÔNG THỂ KẾT NỐI',`<div>Trình duyệt/GitHub Pages bị chặn khi gọi trực tiếp máy chủ Garena (CORS hoặc cơ chế bảo vệ).</div><p class="note">Đây không phải kết luận tài khoản chưa/đã ban. Cần một proxy/backend trung gian để truy vấn an toàn.</p>`);
+ }finally{btn.disabled=false;btn.textContent='KIỂM TRA'}
+}
+btn.onclick=check;uid.addEventListener('keydown',e=>{if(e.key==='Enter')check()});
+</script>
+</body></html>
